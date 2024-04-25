@@ -20,6 +20,7 @@
 ALFTOOLS_BIN=`dirname "$0"`
 . $ALFTOOLS_BIN/alfToolsLib.sh
 
+RET=0
 
 
 function __show_command_options() {
@@ -158,6 +159,8 @@ else
 	-H 'Content-Type:application/json' \
 	-d@- -X PUT \
 	$ALF_EP/service/api/people/$ALF_ENC_UID
+
+	RET=$?
 fi
 
 if [[ "$ALF_USERPW" != "" ]]
@@ -171,4 +174,6 @@ then
 	-d@- -X POST \
 	$ALF_EP/service/api/person/changepassword/$ALF_ENC_UID
 fi
+
+exit $RET
 

@@ -10,6 +10,7 @@ ALFTOOLS_BIN=`dirname "$0"`
 function __show_command_options() {
   echo "  command options:"
   echo "    -j    optional, switch to enable raw json output"
+  echo "    -p    optional, dump also firstName/firstName"
   echo
 }
 
@@ -23,8 +24,9 @@ function __show_command_explanation() {
 }
 
 # command local options
-ALF_CMD_OPTIONS="${ALF_GLOBAL_OPTIONS}"
+ALF_CMD_OPTIONS="${ALF_GLOBAL_OPTIONS}jp"
 ALF_JSON_OUTPUT=false
+ALF_PW_OUTPUT=false
 
 function __process_cmd_option() {
   local OPTNAME=$1
@@ -34,6 +36,8 @@ function __process_cmd_option() {
   in
     j)
       ALF_JSON_OUTPUT=true;;
+    p)
+      ALF_PW_OUTPUT=true;;
   esac
 }
 
@@ -53,9 +57,31 @@ then
 fi
 
 
+curl $ALF_CURL_OPTS -u $ALF_UID:$ALF_PW "$ALF_EP/service/api/people" |(
 if $ALF_JSON_OUTPUT
 then
-  curl $ALF_CURL_OPTS -u $ALF_UID:$ALF_PW "$ALF_EP/service/api/people"
+	cat
 else
-  curl $ALF_CURL_OPTS -u $ALF_UID:$ALF_PW "$ALF_EP/service/api/people" | $ALF_JSHON -Q -e people -a -e  userName -u 
+  if $ALF_PW_OUTPUT
+  then
+  	$ALF_JSHON -Q -e people -a -e userName -u \
+	-p -e firstName -u -p -e lastName
+  else
+  	$ALF_JSHON -Q -e people -a -e userName -u 
+  fi
 fi
+) | (
+
+if $ALF_PW_OUTPUT
+then
+	while read uname
+	do
+		read first
+		read last
+		echo "$uname:$first:$last" | tr -d \"
+	done
+else
+	cat
+fi
+
+)
