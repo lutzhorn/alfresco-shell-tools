@@ -84,6 +84,18 @@ function __htd() {
 	perl -pe 's/\%([A-Fa-f0-9]{2})/pack("C", hex($1))/seg;'
 }
 
+function __recode() {
+  local string=$@
+
+  if echo "$string" | recode utf8..latin1 > /dev/null 2>&1
+  then
+  	# string uses utf8
+	echo "$string"
+  else
+	echo "$string" | recode latin1..utf8
+  fi
+}
+
 function __encode_url_path() {
 # see here for credits http://stackoverflow.com/questions/296536/urlencode-from-a-bash-script
   local string=$@

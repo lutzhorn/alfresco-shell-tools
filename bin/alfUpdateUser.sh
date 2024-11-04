@@ -112,11 +112,13 @@ fi
 
 if [[ "$ALF_FIRST_NAME" != "" ]]
 then
+  ALF_FIRST_NAME=`__recode "$ALF_FIRST_NAME"`
   ALF_JSON=`echo "$ALF_JSON"| $ALF_JSHON -s "$ALF_FIRST_NAME" -i firstName`
 fi
 
 if [[ "$ALF_LAST_NAME" != "" ]]
 then
+  ALF_LAST_NAME=`__recode "$ALF_LAST_NAME"`
   ALF_JSON=`echo "$ALF_JSON"| $ALF_JSHON -s "$ALF_LAST_NAME" -i lastName`
 fi
 
@@ -132,6 +134,7 @@ fi
 
 if [[ "$ALF_ORG" != "" ]]
 then
+  ALF_ORG=`__recode "$ALF_ORG"`
   ALF_JSON=`echo "$ALF_JSON"| $ALF_JSHON -s "$ALF_ORG" -i organisation`
 fi
 
