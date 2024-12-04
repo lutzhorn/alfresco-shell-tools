@@ -54,9 +54,12 @@ function help() {
   echo
   __show_command_explanation
   echo
-  echo "  the alfresco shell tools are created by"
-  echo "    lothar.maerkle@ecm4u.de - http://www.ecm4u.de - http://www.ecm-market.de"
-  echo "    anybody jumps in?"
+  echo "  The Alfresco shell tools are created by"
+  echo "    lothar.maerkle@ecm4u.de"
+  echo "    http://www.ecm4u.de - http://www.ecm-market.de"
+  echo "    This fork:"
+  echo "    https://github.com/fsckawk/alfresco-shell-tools"
+  echo "    Anybody jumps in?"
 }
 
 #

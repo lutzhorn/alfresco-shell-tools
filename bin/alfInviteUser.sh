@@ -124,7 +124,7 @@ ALF_EUSER=`$ALFTOOLS_BIN/alfGetUser.sh ${ALF_USERNAME} 2>/dev/null`
 if [ $? -eq 0 ]
 then
 	# Existing user
-	echo " Existing user ${ALF_USERNAME}"
+	echo "Existing user ${ALF_USERNAME}"
 	ALF_USER="${ALF_USERNAME}"
 	#ALF_USER_FIRST_NAME=`echo "$ALF_EUSER" |\
 	#	awk -F\" '/^[ 	]*"firstName":/ {print $4}'`
@@ -134,7 +134,7 @@ then
 	ALF_USER_FIRST_NAME=`echo "$ALF_EUSER" | $ALF_JSHON -e firstName -u`
 	ALF_USER_LAST_NAME=`echo "$ALF_EUSER" | $ALF_JSHON -e lastName -u`
 
-	echo " user: $ALF_USER_FIRST_NAME $ALF_USER_LAST_NAME <${ALF_USER_MAIL}>"
+	echo "user:${ALF_USERNAME}:${ALF_USER_FIRST_NAME}:${ALF_USER_LAST_NAME}:${ALF_USER_MAIL}"
 
 	#ALF_LOCKED=`echo "$ALF_EUSER" |\
 	#	awk -F'[ :,]' '/^[ 	]*"enabled":/ {print $3}'`
