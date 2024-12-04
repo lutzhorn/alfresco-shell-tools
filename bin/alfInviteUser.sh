@@ -1,9 +1,10 @@
 #!/bin/bash
 
-# Tue Jul 18 10:16:15 CEST 2017
+# Wed Dec  4 12:08:15 CET 2024
 # Changes: Use jshon instead of awk
 # Changes: Detect locked users
 # Changes: Unlock users
+# Changes: Optional username parameter
 # spd@daphne.cps.unizar.es
 
 # Script to invite user to alfresco site.
@@ -28,6 +29,7 @@ function __show_command_options() {
   echo "    -f FIRST_NAME , first name"
   echo "    -l LAST_NAME  , last name"
   echo "    -m MAIL       , e-mail"
+  echo "    -n UNAME      , user name (defaults to name in e-mail)"
   echo "    -r ROLE       , Collaborator|Consumer|Contributor|Manager"
   echo "    -F            , force invitation and unlock account"
   echo
@@ -54,7 +56,8 @@ function __show_command_explanation() {
 
 
 # command local options
-ALF_CMD_OPTIONS="${ALF_GLOBAL_OPTIONS}s:f:l:m:r:F"
+ALF_CMD_OPTIONS="${ALF_GLOBAL_OPTIONS}n:s:f:l:m:r:F"
+ALF_USERNAME=""
 ALF_SITE_SHORT_NAME=""
 ALF_USER_FIRST_NAME=""
 ALF_USER_LAST_NAME=""
@@ -69,6 +72,8 @@ function __process_cmd_option() {
 
   case $OPTNAME
   in
+  	n)
+	  ALF_USERNAME=$OPTARG;;
     s)
       ALF_SITE_SHORT_NAME=$OPTARG;;
     f)
@@ -109,6 +114,7 @@ then
   echo "  user: $ALF_UID"
   echo "  endpoint: $ALF_EP"
   echo "  curl opts: $ALF_CURL_OPTS"
+  echo "  uname: $ALF_USERNAME"
   echo "  user: $ALF_USER_FIRST_NAME $ALF_USER_LAST_NAME <${ALF_USER_MAIL}>"
   echo "  role: $ALF_USER_ROLE"
   echo "  site short name: $ALF_SITE_SHORT_NAME"
@@ -118,7 +124,10 @@ fi
 # First should we tell if this is an existing user
 #
 
-ALF_USERNAME=`echo "${ALF_USER_MAIL}" | sed -e 's/@.*//'`
+if [ "_${ALF_USERNAME}" = "_" ]
+then
+	ALF_USERNAME=`echo "${ALF_USER_MAIL}" | sed -e 's/@.*//'`
+fi
 ALF_EUSER=`$ALFTOOLS_BIN/alfGetUser.sh ${ALF_USERNAME} 2>/dev/null`
 
 if [ $? -eq 0 ]
