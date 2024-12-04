@@ -146,7 +146,7 @@ function __process_cmd_option() {
 
 function __get_share_session_id() {
   # get a valid share session id
-  ALF_SHARE_SESSIONID=`curl -f -sS -q -i \
+  ALF_SHARE_SESSIONID=`curl -k -f -sS -q -i \
   	--data "username=$ALF_UID" \
 	--data "password=$ALF_PW" \
 	-X POST $ALF_SHARE_EP/page/dologin |\
