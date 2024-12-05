@@ -140,7 +140,6 @@ then
 	"${URL}" | $ALF_JSHON -e properties -e cmis:objectId -e value -u`
 	ALF_NODE_ID="workspace/SpacesStore/${ALF_NODE_ID}"
 
-
 else
 	ALF_NODE_ID="workspace/SpacesStore/${ALF_NODE_ID}"
 fi

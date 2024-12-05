@@ -54,9 +54,12 @@ function help() {
   echo
   __show_command_explanation
   echo
-  echo "  the alfresco shell tools are created by"
-  echo "    lothar.maerkle@ecm4u.de - http://www.ecm4u.de - http://www.ecm-market.de"
-  echo "    anybody jumps in?"
+  echo "  The Alfresco shell tools are created by"
+  echo "    lothar.maerkle@ecm4u.de"
+  echo "    http://www.ecm4u.de - http://www.ecm-market.de"
+  echo "    This fork:"
+  echo "    https://github.com/fsckawk/alfresco-shell-tools"
+  echo "    Anybody jumps in?"
 }
 
 #
@@ -82,6 +85,18 @@ function __encode_url_param() {
 
 function __htd() {
 	perl -pe 's/\%([A-Fa-f0-9]{2})/pack("C", hex($1))/seg;'
+}
+
+function __recode() {
+  local string=$@
+
+  if echo "$string" | recode utf8..latin1 > /dev/null 2>&1
+  then
+  	# string uses utf8
+	echo "$string"
+  else
+	echo "$string" | recode latin1..utf8
+  fi
 }
 
 function __encode_url_path() {
@@ -131,7 +146,7 @@ function __process_cmd_option() {
 
 function __get_share_session_id() {
   # get a valid share session id
-  ALF_SHARE_SESSIONID=`curl -f -sS -q -i \
+  ALF_SHARE_SESSIONID=`curl -k -f -sS -q -i \
   	--data "username=$ALF_UID" \
 	--data "password=$ALF_PW" \
 	-X POST $ALF_SHARE_EP/page/dologin |\

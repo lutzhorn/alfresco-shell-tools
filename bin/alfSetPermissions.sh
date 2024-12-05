@@ -108,7 +108,14 @@ then
 
 	ALF_NODE_ID=`curl $ALF_CURL_OPTS \
 	-u"$ALFTOOLS_USER:$ALFTOOLS_PASSWORD" \
-	"${URL}" | $ALF_JSHON -e properties -e cmis:objectId -e value -u`
+	"${URL}" 2>/dev/null |\
+	$ALF_JSHON -e properties -e cmis:objectId -e value -u 2>/dev/null`
+
+	if [ "_$ALF_NODE_ID" = "_" ]
+	then
+		echo "#### ERROR: Non-existing path" >&2
+		exit 2
+	fi
 	ALF_NODE_ID="workspace/SpacesStore/${ALF_NODE_ID}"
 
 else
@@ -148,7 +155,7 @@ done
 
 
 echo "$ALF_JSON" |\
-curl $ALF_CURL_OPTS -v \
+curl $ALF_CURL_OPTS \
 -u"$ALFTOOLS_USER:$ALFTOOLS_PASSWORD" \
 -H 'Content-Type:application/json' \
 -d@- -X POST \

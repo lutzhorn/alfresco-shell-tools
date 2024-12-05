@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Tue May 23 13:10:49 CEST 2017
+# Mon May 18 11:09:01 CEST 2020
 # spd@daphne.cps.unizar.es
 
 # Script to create a folder
@@ -111,6 +111,11 @@ $ALF_JSHON \
 -s "$ALF_FOLDER_TITLE" -i title \
 -s "$ALF_FOLDER_DESC" -i description \
 -s "cm:folder" -i type`
+
+if $ALF_VERBOSE
+then
+	echo "$ALF_JSON"
+fi
 
 echo "$ALF_JSON" |\
 curl $ALF_CURL_OPTS \

@@ -1,8 +1,10 @@
 #!/bin/bash
 
-# Mon Jun 20 14:39:23 CEST 2016
+# Wed Dec  4 12:08:15 CET 2024
 # Changes: Use jshon instead of awk
 # Changes: Detect locked users
+# Changes: Unlock users
+# Changes: Optional username parameter
 # spd@daphne.cps.unizar.es
 
 # Script to invite user to alfresco site.
@@ -27,7 +29,9 @@ function __show_command_options() {
   echo "    -f FIRST_NAME , first name"
   echo "    -l LAST_NAME  , last name"
   echo "    -m MAIL       , e-mail"
+  echo "    -n UNAME      , user name (defaults to name in e-mail)"
   echo "    -r ROLE       , Collaborator|Consumer|Contributor|Manager"
+  echo "    -F            , force invitation and unlock account"
   echo
 }
 
@@ -52,12 +56,14 @@ function __show_command_explanation() {
 
 
 # command local options
-ALF_CMD_OPTIONS="${ALF_GLOBAL_OPTIONS}s:f:l:m:r:"
+ALF_CMD_OPTIONS="${ALF_GLOBAL_OPTIONS}n:s:f:l:m:r:F"
+ALF_USERNAME=""
 ALF_SITE_SHORT_NAME=""
 ALF_USER_FIRST_NAME=""
 ALF_USER_LAST_NAME=""
 ALF_USER_MAIL=""
 ALF_USER_ROLE=""
+ALF_FORCE=false
 
 
 function __process_cmd_option() {
@@ -66,6 +72,8 @@ function __process_cmd_option() {
 
   case $OPTNAME
   in
+  	n)
+	  ALF_USERNAME=$OPTARG;;
     s)
       ALF_SITE_SHORT_NAME=$OPTARG;;
     f)
@@ -76,6 +84,8 @@ function __process_cmd_option() {
       ALF_USER_MAIL=$OPTARG;;
     r)
       ALF_USER_ROLE="Site$OPTARG";;
+    F)
+      ALF_FORCE=: ;;
   esac
 }
 
@@ -86,6 +96,17 @@ shift $((OPTIND-1))
 
 # command arguments,
 
+case "_${ALF_USER_ROLE}" in
+	_SiteCollaborator|_SiteConsumer|_SiteContributor|_SiteManager)
+		:
+		;;
+	*)
+		echo "ERROR: Incorrect role $ALF_USER_ROLE" >&2
+		__show_command_options
+		exit 1
+		;;
+esac
+
 if $ALF_VERBOSE
 then
   ALF_CURL_OPTS="$ALF_CURL_OPTS -v"
@@ -93,6 +114,7 @@ then
   echo "  user: $ALF_UID"
   echo "  endpoint: $ALF_EP"
   echo "  curl opts: $ALF_CURL_OPTS"
+  echo "  uname: $ALF_USERNAME"
   echo "  user: $ALF_USER_FIRST_NAME $ALF_USER_LAST_NAME <${ALF_USER_MAIL}>"
   echo "  role: $ALF_USER_ROLE"
   echo "  site short name: $ALF_SITE_SHORT_NAME"
@@ -102,13 +124,16 @@ fi
 # First should we tell if this is an existing user
 #
 
-ALF_USERNAME=`echo "${ALF_USER_MAIL}" | sed -e 's/@.*//'`
+if [ "_${ALF_USERNAME}" = "_" ]
+then
+	ALF_USERNAME=`echo "${ALF_USER_MAIL}" | sed -e 's/@.*//'`
+fi
 ALF_EUSER=`$ALFTOOLS_BIN/alfGetUser.sh ${ALF_USERNAME} 2>/dev/null`
 
 if [ $? -eq 0 ]
 then
 	# Existing user
-	echo " Existing user ${ALF_USERNAME}"
+	echo "Existing user ${ALF_USERNAME}"
 	ALF_USER="${ALF_USERNAME}"
 	#ALF_USER_FIRST_NAME=`echo "$ALF_EUSER" |\
 	#	awk -F\" '/^[ 	]*"firstName":/ {print $4}'`
@@ -118,7 +143,7 @@ then
 	ALF_USER_FIRST_NAME=`echo "$ALF_EUSER" | $ALF_JSHON -e firstName -u`
 	ALF_USER_LAST_NAME=`echo "$ALF_EUSER" | $ALF_JSHON -e lastName -u`
 
-	echo " user: $ALF_USER_FIRST_NAME $ALF_USER_LAST_NAME <${ALF_USER_MAIL}>"
+	echo "user:${ALF_USERNAME}:${ALF_USER_FIRST_NAME}:${ALF_USER_LAST_NAME}:${ALF_USER_MAIL}"
 
 	#ALF_LOCKED=`echo "$ALF_EUSER" |\
 	#	awk -F'[ :,]' '/^[ 	]*"enabled":/ {print $3}'`
@@ -127,8 +152,14 @@ then
 		
 	if [ _"$ALF_LOCKED" = "_false" ]	
 	then
-		echo "#### ERROR: ${ALF_USERNAME} exists but is locked" >&2
-		exit 1
+		if $ALF_FORCE
+		then
+			echo "#### WARNING: ${ALF_USERNAME} exists but is locked" >&2
+			alfUpdateUser.sh -a false -n ${ALF_USERNAME}
+		else
+			echo "#### ERROR: ${ALF_USERNAME} exists but is locked" >&2
+			exit 1
+		fi
 	fi
 
 else

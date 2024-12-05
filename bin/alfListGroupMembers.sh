@@ -1,5 +1,14 @@
 #!/bin/bash
-#set -x
+
+# Wed Jun 26 11:43:21 CEST 2019
+# spd@daphne.cps.unizar.es
+#
+# Script to get users in a group
+# Status: working against alfresco-5.1.e with CSRF protection enabled (default)
+
+# Requires alfToolsLib.sh
+# Requires jshon
+
 # param section
 
 # source function library
@@ -11,6 +20,7 @@ function __show_command_options() {
   echo "  command options:"
   echo "    -g    just groups"
   echo "    -u    just users"
+  echo "    -t    optional, terse output. Default full names"
   echo
 }
 
@@ -30,9 +40,10 @@ function __show_command_explanation() {
 
 # command local options
 # command option defaults
-ALF_CMD_OPTIONS="${ALF_GLOBAL_OPTIONS}gu"
+ALF_CMD_OPTIONS="${ALF_GLOBAL_OPTIONS}gut"
 ALF_SHOW_USERS=true
 ALF_SHOW_GROUPS=true
+ALF_TERSE=false
 
 function __process_cmd_option() {
   local OPTNAME=$1
@@ -44,6 +55,8 @@ function __process_cmd_option() {
       ALF_SHOW_USERS=false;;
     u)
       ALF_SHOW_GROUPS=false;;
+    t)
+      ALF_TERSE=true;;
   esac
 }
 
@@ -82,8 +95,7 @@ __encode_url_param $ALF_GROUP
 ENC_GROUP=$ENCODED_PARAM
 
 ALF_API_URI="/service/api/groups/$ENC_GROUP/children"
-echo $ALF_SHOW_USERS
-echo $ALF_SHOW_GROUPS
+
 if [[ $ALF_SHOW_GROUPS == true ]]
 then
   ALF_API_URI="/service/api/groups/$ENC_GROUP/children?authorityType=GROUP"
@@ -94,6 +106,11 @@ then
   ALF_API_URI="/service/api/groups/$ENC_GROUP/children?authorityType=USER"
 fi
 
-
-curl $ALF_CURL_OPTS -u $ALF_UID:$ALF_PW "$ALF_EP$ALF_API_URI" | $ALF_JSHON -Q -e data -a -e fullName -u
+if $ALF_TERSE
+then
+	ATTR=shortName
+else
+	ATTR=fullName
+fi
+curl $ALF_CURL_OPTS -u $ALF_UID:$ALF_PW "$ALF_EP$ALF_API_URI" | $ALF_JSHON -Q -e data -a -e $ATTR -u
 
